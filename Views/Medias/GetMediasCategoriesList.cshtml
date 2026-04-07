@@ -1,0 +1,34 @@
+﻿@{ 
+    List<string> categories = DAL.DB.Medias.MediasCategories();
+    string selectedCategory = (string)Session["SelectedCategory"];
+    int selectedOwnerId = Session["SelectedOwnerId"] != null ? (int)Session["SelectedOwnerId"] : 0;
+    var owners = DAL.DB.Medias.ToList()
+        .GroupBy(media => media.OwnerId)
+        .Select(group => new
+        {
+            User = DAL.DB.Users.Get(group.Key),
+            MediaCount = group.Count()
+        })
+        .Where(owner => owner.User != null)
+        .OrderBy(owner => owner.User.Name)
+        .ToList();
+}
+
+<div class="mediaSearchFilters">
+<select id="categorySelect" class="form-control">
+    <option value="" selected>Toutes les catégories</option>
+    @foreach (var category in categories)
+    {
+        string selected = selectedCategory == category ? "selected" : "";
+        <option value="@category" @selected>@category</option>
+    }
+</select>
+    <select id="ownerSelect" class="form-control">
+        <option value="0" selected>Tous les usagers</option>
+        @foreach (var owner in owners)
+        {
+            string selected = selectedOwnerId == owner.User.Id ? "selected" : "";
+            <option value="@owner.User.Id" @selected>@owner.User.Name (@owner.MediaCount)</option>
+        }
+    </select>
+</div>

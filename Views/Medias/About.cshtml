@@ -1,0 +1,39 @@
+﻿@{ ViewBag.PageTitle = "À propos de "; }
+<div style="display:flex; align-items:center">
+    <img src="~/WebApp.png" style="width:70px" />
+    <h1>Wikimedia</h1>
+
+</div>
+<dl>
+    <dt>
+        Auteurs
+    </dt>
+
+    <dd>
+        Charles St-Pierre
+        <br />
+        Abdoullah El Ahmar
+    </dd>
+
+    <dt>
+        Description
+    </dt>
+
+    <dd>
+        Application Web transactionnelle offrant une interface CRUD pour gérer une liste de vidéos Youtube conservés dans un fichier local au serveur en format JSON.
+    </dd>
+
+    <dt>
+        Date de mise à jour
+    </dt>
+
+    <dd>
+        20 Mars 2026
+    </dd>
+
+    <dt>
+        <br />
+        Nombres d'usagers en ligne : @Models.User.GetOnlineUsers().Count()
+    </dt>
+
+</dl>

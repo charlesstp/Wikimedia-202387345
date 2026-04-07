@@ -1,0 +1,60 @@
+﻿@model IEnumerable<Models.Media>
+
+@{
+    Func<Models.Media, string> getLikesTooltip = media =>
+    {
+        return media.LikedUsers.Count > 0
+            ? string.Join(", ", media.LikedUsers.Select(u => u.Name))
+            : "Aucun j'aime";
+    };
+
+    if (Model.Count() != 0)
+    {
+        int connectedId = Models.User.ConnectedUser.Id;
+        foreach (var media in Model)
+        {
+            bool writeAccess = Models.User.ConnectedUser.IsAdmin || media.OwnerId == connectedId;
+            string likedUsersTooltip = "Usagers qui ont aimé:";
+            if (media.LikedUsers.Count > 0)
+            {
+                likedUsersTooltip += "\n" + string.Join("\n", media.LikedUsers.Select(u => u.Name));
+            }
+            string likeIcon = media.CurrentUserLikes ? "fa-solid fa-thumbs-up" : "fa-regular fa-thumbs-up";
+
+            <div class="mediaLayout">
+                <a href="/Medias/Details/@media.Id" title="Voir les détails de @media.Title" style="text-decoration:none; width:100% !important">
+                    <div class="mediaThumbnail"
+                         style="background-image:url('https://img.youtube.com/vi/@media.YoutubeId/mqdefault.jpg'); padding:6px; display:flex; flex-flow:row-reverse ">
+                        <div class="UserSmallAvatar transparentBackground"
+                             style="background-image: url('@media.Owner.Avatar'); border:0.1px solid white;"
+                             title="Ajouté par @media.Owner.Name"></div>
+                        @if (writeAccess && media.Shared)
+                        {
+                            <div class="UserSmallAvatar transparentBackground" style="background-image: url('/Content/UI-Images/shared.png'); margin-right:6px;" title="partagée"></div>
+                        }
+                    </div>
+                </a>
+
+                <div class="mediaTitle ellipsis" style="margin-left: 4px; margin-right: 4px; font-size: 0.8em; font-weight: bold">
+                    @media.Title
+                </div>
+                <div style="display: grid; grid-template-columns: auto 120px; align-items: last baseline ">
+
+                    <div style="margin-left: 4px; color: gray; font-size: 0.65em">@media.Category <span style="color: dodgerBlue">@Helper.When(media.PublishDate)</span> </div>
+
+                    <div class="mediaLikesBar">
+                        <div class="mediaLikesCount @(media.CurrentUserLikes ? "likedThumb" : "")" title="@likedUsersTooltip">
+                            <span>@media.LikesCount</span>
+                        </div>
+
+                        <div class="toggleLikeCmd mediaLikeButton"
+                             mediaId="@media.Id"
+                             title="@(media.CurrentUserLikes ? "Retirer j'aime" : "Ajouter j'aime")">
+                            <span class="icon @likeIcon @(media.CurrentUserLikes ? "likedThumb" : "")"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+}

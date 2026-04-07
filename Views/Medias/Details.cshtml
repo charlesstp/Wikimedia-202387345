@@ -1,0 +1,85 @@
+﻿@model Models.Media
+@{
+    ViewBag.PageTitle = "Détails";
+    string search = Session["Search"] != null ? ((bool)Session["Search"]).ToString() : false.ToString();
+    string SearchString = Session["SearchString"] != null ? (string)Session["SearchString"] : "";
+}
+
+<div id="detailsPanel" class="detailsPanel">
+    <!-- auto refreshed -->
+</div>
+
+@section Scripts {
+    <script>
+        $(() => {
+            newSession(600);
+            mediaDetails_ARP = new AutoRefreshedPanel("detailsPanel", "/Medias/GetMediaDetails", 5, mediaDetailsPostRefresh);
+            sessionStorage.setItem("RestoreScrollPosition", "1");
+            bindHeaderLikeButton();
+        })
+
+        function mediaDetailsPostRefresh() {
+            $(".toggleLikeCmd").off();
+            $(".toggleLikeCmd").on("click", function (e) {
+                mediaDetails_ARP.command("/Medias/ToggleMediaLike/" + $(this).attr("mediaId"), updateHeaderLikeButton);
+                e.preventDefault();
+            });
+            bindHeaderLikeButton();
+            syncHeaderLikeState();
+            // todo
+            highlightKeyword();
+        }
+
+        function bindHeaderLikeButton() {
+            $("#headerToggleLikeCmd").off();
+            $("#headerToggleLikeCmd").on("click", function (e) {
+                mediaDetails_ARP.command("/Medias/ToggleMediaLike/" + $(this).attr("data-media-id"), updateHeaderLikeButton);
+                e.preventDefault();
+            });
+        }
+
+        function updateHeaderLikeButton(params) {
+            if (params == null) return;
+            let headerLikesCount = $("#headerLikesCount");
+            let headerLikeButton = $("#headerToggleLikeCmd");
+            if (headerLikesCount.length > 0) {
+                headerLikesCount.text(params.likesCount);
+                if (params.likedUsersTooltip != null)
+                    headerLikesCount.attr("title", params.likedUsersTooltip);
+            }
+            if (headerLikeButton.length == 0) return;
+
+            headerLikeButton.removeClass("fa-solid fa-regular");
+            headerLikeButton.addClass(params.liked ? "fa-solid" : "fa-regular");
+            headerLikeButton.addClass("fa-thumbs-up");
+            headerLikeButton.attr("title", params.liked ? "Retirer j'aime" : "Ajouter j'aime");
+        }
+
+        function syncHeaderLikeState() {
+            let detailsLikeState = $("#detailsLikeState");
+            if (detailsLikeState.length == 0) return;
+
+            updateHeaderLikeButton({
+                likesCount: detailsLikeState.attr("data-likes-count"),
+                liked: detailsLikeState.attr("data-current-user-likes") === "true",
+                likedUsersTooltip: detailsLikeState.attr("data-liked-users-tooltip")
+            });
+        }
+
+        function highlightKeyword() {
+            if ("@search" == "True") {
+                let keyword = "@SearchString";
+                if (keyword.length > 0) {
+                     let titles = document.getElementsByClassName('mediaTitle');
+                     Array.from(titles).forEach(title => {
+                         highlight(keyword, title);
+                     });
+                     let descriptions = document.getElementsByClassName('mediaDescription');
+                     Array.from(descriptions).forEach(description => {
+                         highlight(keyword, description);
+                     })
+                }
+            }
+        }
+    </script>
+}
